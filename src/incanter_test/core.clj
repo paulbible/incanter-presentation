@@ -467,35 +467,5 @@
 
 
 
-(def quotes-fname "data/HistoricalQuotes_T.csv")
-
-(def quotes-sub-fname "data/HistoricalQuotes_T_sub.csv")
-
-(def quote-data (read-dataset quotes-fname
-                              :delim \,
-                              :header true))
-
-(def data-sub (read-dataset quotes-sub-fname
-                            :delim \,
-                            :header true))
-
-
-(map mean (partition 5 1 ($ :close data-sub)))
-
-(with-data quote-data
-  (doto (xy-plot (range 0 (nrow $data)) ($ :close $data))    
-    (set-y-range (reduce min ($ :low quote-data))
-                 (reduce max ($ :high quote-data)))
-    (add-lines (range 5 (nrow $data))
-               (map mean (partition 5 1 ($ :close quote-data))))
-    (add-lines (range 15 (nrow $data))
-               (map mean (partition 15 1 ($ :close quote-data))))
-    (add-lines (range 50 (nrow $data))
-               (map mean (partition 50 1 ($ :close quote-data))))
-    (add-lines (list 50 50) (list 0 50))
-    (view)))
-
-
-
 
 "incanter-test"
