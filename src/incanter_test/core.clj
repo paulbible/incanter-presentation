@@ -428,24 +428,38 @@
 
 ;;;;;;;;; PCA
 ;; revealing hidden structure in data
-(def pca (principal-components iris-mat))
+(def pca 
+  (principal-components iris-mat))
 
-;; function to plot the principle component lines
-(defn add-pca-n [chart pca n]
-  (let [pc1 (sel (:rotation pca) :cols n)
-        x   (first pc1)
-        y   (second pc1)]
-    (add-lines chart [0 x] [0 y])))
-  
-;; plot the data and add a line representing the PCA
+;; the rotation is the set of principle components 
+(def pc1 (sel (:rotation pca) :cols 0))
+(def pc2 (sel (:rotation pca) :cols 1))
+
+(def x1 (mmult iris-mat pc1))
+(def x2 (mmult iris-mat pc2))
+
 (defn show-21 []
-  (doto (matrix-plot mat)
-    (set-x-range -10 10)
-    (set-y-range -10 10)
-    (add-pca-n pca 0)
-    (add-pca-n pca 1)
-    (view)))
+  (view
+    (scatter-plot x1 x2
+                  :group-by ($ [:Species] (get-dataset :iris)))))
 
+
+;; PCA is the eigenvalue decomposition of the correlation matrix
+(def pca2 (decomp-eigenvalue (correlation iris-mat)))
+
+(def ev1 (sel (:vectors pca2) :cols 0))
+(def ev2 (sel (:vectors pca2) :cols 1))
+
+(def x3 (mmult iris-mat ev1))
+(def x4 (mmult iris-mat ev2))
+
+(defn show-22 []
+  (view
+    (scatter-plot x3 x4
+                  :group-by ($ [:Species] (get-dataset :iris)))))
+
+
+;; when scale matters use the covarience matrix
 (defn random-2d-normal [{:keys [sd1 sd2 theta]
                          :or {sd1 1 sd2 1 theta 0.25}}]
   (let [x (sample-normal 1000 :sd sd1)
@@ -454,15 +468,40 @@
       (bind-columns x y)
       (rot-mat-2d (* theta 3.14159)))))
 
-
-(defn show-22 []
-  (let [m (random-2d-normal {:sd1 0.5 :sd2 2 :theta (* 0.25 3.14)})
-        pcs (principal-components m)]
+(defn show-23 []
+  (let [m (random-2d-normal {:sd1 0.5 :sd2 2 :theta (* 0.25 3.14)})]
     (doto (matrix-plot m)
       (set-x-range -10 10)
       (set-y-range -10 10)
-      (prn pcs)
       (view))))
+
+(defn show-24 []
+  (let [m (random-2d-normal {:sd1 0.5 :sd2 2 :theta (* 0.25 3.14)})
+        eigen (decomp-eigenvalue (covariance m))]
+    (doto (matrix-plot m)
+      (set-x-range -10 10)
+      (set-y-range -10 10)
+      (prn eigen)
+      (view))))
+
+;; function to plot the principle component lines
+(defn add-axis-n [chart evs n]
+  (let [vec (sel (:vectors evs) :cols n)
+        x   (first vec)
+        y   (second vec)]
+    (add-lines chart [0 x] [0 y])))
+  
+;; plot the data and add a line representing the PCA
+(defn show-25 [rads]
+  (let [m (random-2d-normal {:sd1 0.5 :sd2 2 :theta (* rads 3.14)})
+        eigen (decomp-eigenvalue (covariance m))]
+    (doto (matrix-plot m)
+      (set-x-range -10 10)
+      (set-y-range -10 10)
+      (add-axis-n eigen 0)
+      (add-axis-n eigen 1)
+      (view))))
+
 
 
 
