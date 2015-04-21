@@ -484,14 +484,14 @@
       (prn eigen)
       (view))))
 
-;; function to plot the principle component lines
+;; function to plot a principle axis
 (defn add-axis-n [chart evs n]
   (let [vec (sel (:vectors evs) :cols n)
         x   (first vec)
         y   (second vec)]
     (add-lines chart [0 x] [0 y])))
   
-;; plot the data and add a line representing the PCA
+;; plot the data and add a line representing a principle axis
 (defn show-25 [rads]
   (let [m (random-2d-normal {:sd1 0.5 :sd2 2 :theta (* rads 3.14)})
         eigen (decomp-eigenvalue (covariance m))]
